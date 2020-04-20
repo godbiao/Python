@@ -6,10 +6,102 @@ from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMe
 from fontTools import subset
 import StreamlinedFont_rc
 
+from fontTools.ttLib import TTFont
+from xml.etree.ElementTree import ElementTree
+import os
+
+
+def modFont():
+    # 加载字体文件：
+    font = TTFont('font.ttf')
+
+    # 转为xml文件：
+    font.saveXML('font.xml')
+
+    def read_xml(in_path):
+        '''''读取并解析xml文件
+           in_path: xml路径
+           return: ElementTree'''
+        tree = ElementTree()
+        tree.parse(in_path)
+        return tree
+
+    def write_xml(tree, out_path):
+        '''''将xml文件写出
+           tree: xml树
+           out_path: 写出路径'''
+        tree.write(out_path, encoding="utf-8", xml_declaration=True)
+
+    def if_match(node, kv_map):
+        '''''判断某个节点是否包含所有传入参数属性
+           node: 节点
+           kv_map: 属性及属性值组成的map'''
+        for key in kv_map:
+            if node.get(key) != kv_map.get(key):
+                return False
+        return True
+
+    # ----------------search -----------------
+    def find_nodes(tree, path):
+        '''''查找某个路径匹配的所有节点
+           tree: xml树
+           path: 节点路径'''
+        return tree.findall(path)
+
+    def get_node_by_keyvalue(nodelist, kv_map):
+        '''''根据属性及属性值定位符合的节点，返回节点
+           nodelist: 节点列表
+           kv_map: 匹配属性及属性值map'''
+        result_nodes = []
+        for node in nodelist:
+            if if_match(node, kv_map):
+                result_nodes.append(node)
+        return result_nodes
+
+    def change_node_text(nodelist, text, is_add=False, is_delete=False):
+        '''''改变/增加/删除一个节点的文本
+           nodelist:节点列表
+           text : 更新后的文本'''
+        for node in nodelist:
+            if is_add:
+                node.text += text
+            elif is_delete:
+                node.text = ""
+            else:
+                node.text = text
+
+    tree = read_xml("font.xml")
+
+    text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "0"})
+    change_node_text(text_nodes, "")
+
+    text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "16"})
+    change_node_text(text_nodes, "")
+
+    text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "17"})
+    change_node_text(text_nodes, "")
+
+    text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "1"})
+    newtext = text_nodes[0].text.replace(" ", "")
+    change_node_text(text_nodes, newtext)
+
+    text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "4"})
+    change_node_text(text_nodes, newtext)
+
+    text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "6"})
+    change_node_text(text_nodes, newtext)
+
+    write_xml(tree, "font2.xml")
+
+    font = TTFont()
+    font.importXML('font2.xml')
+    font.save('font.ttf')
+
+    os.remove('font.xml')
+    os.remove('font2.xml')
+
 
 def subSetFont(ff):
-
-
     options = subset.Options()  # dir(options)
     font = subset.load_font(ff, options)
     subsetter = subset.Subsetter(options)
@@ -18,6 +110,7 @@ def subSetFont(ff):
     # options.flavor = 'woff'
 
     subset.save_font(font, 'font.ttf', options)
+    modFont()
     msg('字体精简完成\n请在程序目录下找到font.ttf文件')
 
 
