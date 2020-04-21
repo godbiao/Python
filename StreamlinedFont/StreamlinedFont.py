@@ -8,6 +8,7 @@ import StreamlinedFont_rc
 
 from fontTools.ttLib import TTFont
 from xml.etree.ElementTree import ElementTree
+from xpinyin import Pinyin
 import os
 
 
@@ -17,6 +18,18 @@ def modFont():
 
     # 转为xml文件：
     font.saveXML('font.xml')
+
+    def is_chinese(string):
+        """
+        检查整个字符串是否包含中文
+        :param string: 需要检查的字符串
+        :return: bool
+        """
+        for ch in string:
+            if u'\u4e00' <= ch <= u'\u9fff':
+                return True
+
+        return True
 
     def read_xml(in_path):
         '''''读取并解析xml文件
@@ -83,6 +96,10 @@ def modFont():
 
     text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "1"})
     newtext = text_nodes[0].text.replace(" ", "")
+    if is_chinese(newtext):
+        p = Pinyin()
+        newtext = p.get_pinyin(newtext, '')
+
     change_node_text(text_nodes, newtext)
 
     text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "4"})
