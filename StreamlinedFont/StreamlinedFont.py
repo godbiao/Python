@@ -116,6 +116,7 @@ def modFont():
 
     os.remove('font.xml')
     os.remove('font2.xml')
+    os.startfile(os.getcwd())
 
 
 def subSetFont(ff):
