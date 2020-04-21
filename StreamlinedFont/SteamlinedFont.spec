@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['StreamlinedFont.py'],
+a = Analysis(['SteamlinedFont.py'],
              pathex=['D:\\github\\Python\\StreamlinedFont'],
              binaries=[],
              datas=[],
@@ -23,11 +23,11 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='StreamlinedFont',
+          name='SteamlinedFont',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False , version='StreamlinedFont.info', icon='app.ico')
+          console=False , version='StreanmlinedFont.info')

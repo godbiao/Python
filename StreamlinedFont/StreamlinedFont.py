@@ -18,15 +18,28 @@ def modFont():
     # 转为xml文件：
     font.saveXML('font.xml')
 
-    def is_chinese(string):
+    def is_contain_chinese(check_str):
         """
-        检查整个字符串是否包含中文
-        :param string: 需要检查的字符串
-        :return: bool
+        判断字符串中是否包含中文
+        :param check_str: {str} 需要检测的字符串
+        :return: {bool} 包含返回True， 不包含返回False
         """
-        for ch in string:
+        for ch in check_str:
             if u'\u4e00' <= ch <= u'\u9fff':
                 return True
+        return False
+
+    def is_chinese(string):
+        """
+        检查整个字符串是否为中文
+        Args:
+            string (str): 需要检查的字符串,包含空格也是False
+        Return
+            bool
+        """
+        for chart in string:
+            if chart < u'\u4e00' or chart > u'\u9fff':
+                return False
 
         return True
 
@@ -95,7 +108,8 @@ def modFont():
 
     text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "1"})
     newtext = text_nodes[0].text.replace(" ", "")
-    if is_chinese(newtext):
+
+    if is_contain_chinese(newtext):
         newtext = 'myFont'
 
     change_node_text(text_nodes, newtext)
@@ -164,7 +178,7 @@ class StreamlinedFont(QDialog):
 
     def initUI(self):
         self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
-        self.setWindowTitle("字体精简")
+        self.setWindowTitle("字体精简小工具")
         self.resize(300, 100)
         self.setFixedSize(300, 100)
         self.setWindowIcon(QIcon(':/windowIcon.png'))
@@ -177,7 +191,9 @@ class StreamlinedFont(QDialog):
 
     def clickedButton(self):
         fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选择需要精简的字体", '', "字体文件(*.ttf)")
-        subSetFont(fileName)
+        if fileName:
+            print(fileName)
+            subSetFont(fileName)
 
 
 if __name__ == '__main__':
