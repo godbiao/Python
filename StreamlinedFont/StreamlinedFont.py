@@ -1,7 +1,6 @@
 import sys
-import uuid
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox
 from fontTools import subset
@@ -97,7 +96,7 @@ def modFont():
     text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "1"})
     newtext = text_nodes[0].text.replace(" ", "")
     if is_chinese(newtext):
-        newtext = str(uuid.uuid1())
+        newtext = 'myFont'
 
     change_node_text(text_nodes, newtext)
 
@@ -116,6 +115,8 @@ def modFont():
     os.remove('font.xml')
     os.remove('font2.xml')
 
+    os.startfile(os.getcwd(), 'explore')
+
 
 def subSetFont(ff):
     options = subset.Options()  # dir(options)
@@ -127,7 +128,7 @@ def subSetFont(ff):
 
     subset.save_font(font, 'font.ttf', options)
     modFont()
-    msg('字体精简完成\n请在程序目录下找到font.ttf文件')
+    # msg('字体精简完成\n请在程序目录下找到font.ttf文件')
 
 
 def msg(text):
@@ -162,14 +163,15 @@ class StreamlinedFont(QDialog):
         self.initUI()
 
     def initUI(self):
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.setWindowTitle("字体精简")
         self.resize(300, 100)
         self.setFixedSize(300, 100)
         self.setWindowIcon(QIcon(':/windowIcon.png'))
         layout = QVBoxLayout()
-        self.button1 = SelectFontButton("选择或拖拽字体文件", self)
+        self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
         self.button1.clicked.connect(self.clickedButton)
-        self.button1.setFixedHeight(60)
+        self.button1.setFixedHeight(80)
         layout.addWidget(self.button1)
         self.setLayout(layout)
 
