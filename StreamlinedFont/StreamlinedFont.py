@@ -1,4 +1,5 @@
 import sys
+import uuid
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
@@ -8,7 +9,6 @@ import StreamlinedFont_rc
 
 from fontTools.ttLib import TTFont
 from xml.etree.ElementTree import ElementTree
-from xpinyin import Pinyin
 import os
 
 
@@ -97,8 +97,7 @@ def modFont():
     text_nodes = get_node_by_keyvalue(find_nodes(tree, "name/namerecord"), {"nameID": "1"})
     newtext = text_nodes[0].text.replace(" ", "")
     if is_chinese(newtext):
-        p = Pinyin()
-        newtext = p.get_pinyin(newtext, '')
+        newtext = str(uuid.uuid1())
 
     change_node_text(text_nodes, newtext)
 
@@ -116,8 +115,6 @@ def modFont():
 
     os.remove('font.xml')
     os.remove('font2.xml')
-    # os.startfile(os.path.dirname(os.path.realpath(__file__)))
-    # print(os.path.dirname(os.path.realpath(__file__)))
 
 
 def subSetFont(ff):
