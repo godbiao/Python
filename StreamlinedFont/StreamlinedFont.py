@@ -2,7 +2,8 @@ import sys
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel
+from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel, \
+    QHBoxLayout, QComboBox
 from fontTools import subset
 import StreamlinedFont_rc
 
@@ -155,23 +156,53 @@ class StreamlinedFont(QDialog):
         self.defaultText = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|'
         self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.setWindowTitle("字体精简小工具")
-        self.resize(300, 180)
-        self.setFixedSize(300, 180)
+        self.resize(300, 170)
+        self.setFixedSize(300, 170)
         self.setWindowIcon(QIcon(':/windowIcon.png'))
+        hwg = QtWidgets.QWidget()
+        vwg = QtWidgets.QWidget()
         layout = QVBoxLayout()
+        layoutH = QHBoxLayout()
+
         self.label = QLabel("保留的字符:")
-        layout.addWidget(self.label)
+        self.label.setFixedHeight(20)
+        layoutH.addWidget(self.label)
+        self.list = QComboBox()
+        self.list.setFixedHeight(20)
+        self.list.setFixedWidth(90)
+        self.list.addItem('常用')
+        self.list.addItem('无符号')
+        self.list.addItem('含中文标点')
+        self.list.currentIndexChanged.connect(self.listChange)
+
+        layoutH.addWidget(self.list)
         self.textEdit1 = QPlainTextEdit()
         self.textEdit1.setFixedHeight(50)
         self.textEdit1.setPlainText(self.defaultText)
-        layout.addWidget(self.textEdit1)
+
         # self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
         self.button1 = QPushButton("选择或拖拽字体文件到这里")
         self.button1.clicked.connect(self.clickedButton)
-        self.button1.setFixedHeight(80)
+        self.button1.setFixedHeight(50)
 
+        hwg.setLayout(layoutH)
+
+
+        layout.addWidget(hwg)
+        layout.addWidget(self.textEdit1)
         layout.addWidget(self.button1)
+
         self.setLayout(layout)
+
+    def listChange(self, i):
+        if i == 0:
+            self.textEdit1.setPlainText(self.defaultText)
+        elif i == 1:
+            self.textEdit1.setPlainText('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+        elif i == 2:
+            self.textEdit1.setPlainText('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|，。？；：‘“【】！￥…（）—')
+        else:
+            pass
 
     def subSetFont(self, ff):
         options = subset.Options()  # dir(options)
