@@ -2,7 +2,7 @@ import sys
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel
 from fontTools import subset
 import StreamlinedFont_rc
 
@@ -132,17 +132,7 @@ def modFont():
     os.startfile(os.getcwd(), 'explore')
 
 
-def subSetFont(ff):
-    options = subset.Options()  # dir(options)
-    font = subset.load_font(ff, options)
-    subsetter = subset.Subsetter(options)
-    subsetter.populate(text='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|')
-    subsetter.subset(font)
-    # options.flavor = 'woff'
 
-    subset.save_font(font, 'font.ttf', options)
-    modFont()
-    # msg('字体精简完成\n请在程序目录下找到font.ttf文件')
 
 
 def msg(text):
@@ -154,46 +144,64 @@ def msg(text):
     messageBox.exec_()
 
 
-class SelectFontButton(QPushButton):
-    def __init__(self, title, parent):
-        super().__init__(title, parent)
+class StreamlinedFont(QDialog):
+    def __init__(self, parent=None):
+        super(StreamlinedFont, self).__init__(parent)
+        self.initUI()
         self.setAcceptDrops(True)
+
+
+    def initUI(self):
+        self.defaultText = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|'
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
+        self.setWindowTitle("字体精简小工具")
+        self.resize(300, 180)
+        self.setFixedSize(300, 180)
+        self.setWindowIcon(QIcon(':/windowIcon.png'))
+        layout = QVBoxLayout()
+        self.label = QLabel("保留的字符:")
+        layout.addWidget(self.label)
+        self.textEdit1 = QPlainTextEdit()
+        self.textEdit1.setFixedHeight(50)
+        self.textEdit1.setPlainText(self.defaultText)
+        layout.addWidget(self.textEdit1)
+        # self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
+        self.button1 = QPushButton("选择或拖拽字体文件到这里")
+        self.button1.clicked.connect(self.clickedButton)
+        self.button1.setFixedHeight(80)
+
+        layout.addWidget(self.button1)
+        self.setLayout(layout)
+
+    def subSetFont(self, ff):
+        options = subset.Options()  # dir(options)
+        font = subset.load_font(ff, options)
+        subsetter = subset.Subsetter(options)
+        t = self.textEdit1.toPlainText()
+        subsetter.populate(text=t)
+        subsetter.subset(font)
+        # options.flavor = 'woff'
+
+        subset.save_font(font, 'font.ttf', options)
+        modFont()
+        # msg('字体精简完成\n请在程序目录下找到font.ttf文件')
+
+    def clickedButton(self):
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选择需要精简的字体", '', "字体文件(*.ttf)")
+        if fileName:
+            # subSetFont(fileName)
+            self.subSetFont(fileName)
 
     def dragEnterEvent(self, e):
         if e.mimeData().text().endswith('.ttf'):
             e.accept()
         else:
-            msg('你拖入了不支持的文件类型')
+            msg('暂时不支持的文件类型')
             e.ignore()
 
     def dropEvent(self, e):  # 放下文件后的动作
         path = e.mimeData().text().replace('file:///', '')  # 删除多余开头
-        subSetFont(path)
-
-
-class StreamlinedFont(QDialog):
-    def __init__(self, parent=None):
-        super(StreamlinedFont, self).__init__(parent)
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
-        self.setWindowTitle("字体精简小工具")
-        self.resize(300, 100)
-        self.setFixedSize(300, 100)
-        self.setWindowIcon(QIcon(':/windowIcon.png'))
-        layout = QVBoxLayout()
-        self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
-        self.button1.clicked.connect(self.clickedButton)
-        self.button1.setFixedHeight(80)
-        layout.addWidget(self.button1)
-        self.setLayout(layout)
-
-    def clickedButton(self):
-        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选择需要精简的字体", '', "字体文件(*.ttf)")
-        if fileName:
-            print(fileName)
-            subSetFont(fileName)
+        self.subSetFont(path)
 
 
 if __name__ == '__main__':
