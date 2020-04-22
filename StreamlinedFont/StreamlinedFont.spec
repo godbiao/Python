@@ -30,4 +30,4 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False , version='StreamlinedFont.info', icon='app.ico')
+          console=False , version='StreamlinedFont.info', icon='ico.png')

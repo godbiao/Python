@@ -224,7 +224,8 @@ class StreamlinedFont(QDialog):
             self.subSetFont(fileName)
 
     def dragEnterEvent(self, e):
-        if e.mimeData().text().endswith('.ttf'):
+        text = e.mimeData().text().lower()
+        if text.endswith('.ttf'):
             e.accept()
         else:
             msg('暂时不支持的文件类型')
