@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFontDatabase, QFont
 from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel, \
     QHBoxLayout, QComboBox
 from fontTools import subset
@@ -18,6 +18,8 @@ def modFont():
 
     # 转为xml文件：
     font.saveXML('font.xml')
+
+    del font
 
     def is_contain_chinese(check_str):
         """
@@ -127,13 +129,12 @@ def modFont():
     font.importXML('font2.xml')
     font.save('font.ttf')
 
+    del font
+
     os.remove('font.xml')
     os.remove('font2.xml')
 
     os.startfile(os.getcwd(), 'explore')
-
-
-
 
 
 def msg(text):
@@ -151,7 +152,6 @@ class StreamlinedFont(QDialog):
         self.initUI()
         self.setAcceptDrops(True)
 
-
     def initUI(self):
         self.defaultText = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|'
         self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
@@ -159,6 +159,10 @@ class StreamlinedFont(QDialog):
         self.resize(300, 170)
         self.setFixedSize(300, 170)
         self.setWindowIcon(QIcon(':/windowIcon.png'))
+
+        # self.fontID = QFontDatabase.addApplicationFont('./font.ttf')
+        # self.fontName = QFontDatabase.applicationFontFamilies(self.fontID)[0]
+
         hwg = QtWidgets.QWidget()
         vwg = QtWidgets.QWidget()
         layout = QVBoxLayout()
@@ -184,9 +188,9 @@ class StreamlinedFont(QDialog):
         self.button1 = QPushButton("选择或拖拽字体文件到这里")
         self.button1.clicked.connect(self.clickedButton)
         self.button1.setFixedHeight(50)
+        # self.button1.setFont(QFont(self.fontName, 12))
 
         hwg.setLayout(layoutH)
-
 
         layout.addWidget(hwg)
         layout.addWidget(self.textEdit1)
@@ -200,7 +204,8 @@ class StreamlinedFont(QDialog):
         elif i == 1:
             self.textEdit1.setPlainText('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
         elif i == 2:
-            self.textEdit1.setPlainText('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|，。？；：‘“【】！￥…（）—')
+            self.textEdit1.setPlainText(
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|，。？；：‘“【】！￥…（）—')
         else:
             pass
 
