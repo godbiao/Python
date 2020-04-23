@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QIcon, QFontDatabase, QFont
+from PyQt5.QtGui import QIcon, QFontDatabase, QFont, QPixmap
 from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel, \
     QHBoxLayout, QComboBox
 from fontTools import subset
@@ -187,16 +187,58 @@ class StreamlinedFont(QDialog):
         # self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
         self.button1 = QPushButton("选择或拖拽字体文件到这里")
         self.button1.clicked.connect(self.clickedButton)
-        self.button1.setFixedHeight(50)
+        self.button1.setFixedHeight(60)
         # self.button1.setFont(QFont(self.fontName, 12))
 
+        source = 'key.png'
+        Scale = [22, 22, 30, 30]  # 左,上,右,下
+        # slice = '40 24 60 50'  # 上 右 下 左
+        repeat = 'stretched stretched'  # rounded
+
+        self.button1.setObjectName('button1')
+        # self.button1.setStyleSheet('#button1{border-width:'+slice+';border-image:url(' + source + ') ' + slice+'}')
+        # self.button1.setStyleSheet('border:30;border-image:url(key.png) 30')
+        self.setBorderImage(self.button1, Scale, source, repeat)
+
         hwg.setLayout(layoutH)
+        # hwg.setObjectName('hwg')
+        # hwg.setStyleSheet('#hwg{border-width:'+slice+';border-image:url(' + source + ') ' + slice+'}')
 
         layout.addWidget(hwg)
         layout.addWidget(self.textEdit1)
         layout.addWidget(self.button1)
 
         self.setLayout(layout)
+
+    # 设置对象的.9背景图
+    '''
+    obj:对象
+    Scale:拉伸区域：讯飞原左上右下方案
+    source:图片地址
+    repeat:重复模式：铺满(rounded)或拉伸(stretched)
+    '''
+    def setBorderImage(self, obj, Scale, source, repeat='stretched stretched'):
+        # 获取图片尺寸
+        sourcePixmap = QPixmap(source)
+        sourceWidth = sourcePixmap.width()
+        sourceHeight = sourcePixmap.height()
+        # print(sourceHeight, sourceWidth)
+
+        slice = [0, 0, 0, 0]
+        slice[0] = Scale[1]  # 上
+        slice[1] = sourceWidth - Scale[2]  # 右
+        if slice[1] < 0:
+            slice[1] = 0
+        slice[2] = sourceHeight - Scale[3]  # 下
+        if slice[2] < 0:
+            slice[2] = 0
+        slice[3] = Scale[0]  # 左
+
+        slice = ' '.join([str(i) for i in slice])
+
+        # print(slice)
+        obj.setStyleSheet(
+            'border-width:' + slice + ';border-image:url(' + source + ') ' + slice + ' ' + repeat)
 
     def listChange(self, i):
         if i == 0:
