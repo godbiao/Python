@@ -1,6 +1,7 @@
 import sys
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, Qt
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QIcon, QFontDatabase, QFont, QPixmap
 from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel, \
     QHBoxLayout, QComboBox
@@ -187,11 +188,12 @@ class StreamlinedFont(QDialog):
         # self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
         self.button1 = QPushButton("选择或拖拽字体文件到这里")
         self.button1.clicked.connect(self.clickedButton)
-        self.button1.setFixedHeight(60)
+        self.button1.setFixedHeight(50)
+        # self.button1.setFont(QFont('font', 20))
         # self.button1.setFont(QFont(self.fontName, 12))
 
         source = 'key.png'
-        Scale = [22, 22, 30, 30]  # 左,上,右,下
+        Scale = [22, 22, 30, 30]  # 左,上,右,下 [22, 22, 30, 30]
         # slice = '40 24 60 50'  # 上 右 下 左
         repeat = 'stretched stretched'  # rounded
 
@@ -215,7 +217,7 @@ class StreamlinedFont(QDialog):
     obj:对象
     Scale:拉伸区域：讯飞原左上右下方案
     source:图片地址
-    repeat:重复模式：铺满(rounded)或拉伸(stretched)
+    repeat:重复模式：铺满(rounded/repeat)或拉伸(stretched)
     '''
     def setBorderImage(self, obj, Scale, source, repeat='stretched stretched'):
         # 获取图片尺寸
@@ -238,7 +240,7 @@ class StreamlinedFont(QDialog):
 
         # print(slice)
         obj.setStyleSheet(
-            'border-width:' + slice + ';border-image:url(' + source + ') ' + slice + ' ' + repeat)
+            'padding:'+str(sourceHeight/2)+' -'+str(sourceWidth/2)+';border-width:' + slice + ';border-image:url(' + source + ') ' + slice + ' ' + repeat)
 
     def listChange(self, i):
         if i == 0:
