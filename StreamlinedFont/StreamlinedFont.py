@@ -307,18 +307,6 @@ class StreamlinedFont(QDialog):
             # subSetFont(fileName)
             subSetFont(fileName, self.textEdit1.toPlainText())
 
-    def dragEnterEvent(self, e):
-        text = e.mimeData().text().lower()
-        if text.endswith('.ttf'):
-            e.accept()
-        else:
-            msg('暂时不支持的文件类型')
-            e.ignore()
-
-    def dropEvent(self, e):  # 放下文件后的动作
-        path = e.mimeData().text().replace('file:///', '')  # 删除多余开头
-        self.subSetFont(path)
-
 
 if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)

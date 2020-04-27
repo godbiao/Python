@@ -144,13 +144,15 @@ class WorkThread(QThread):
         for dname in devices:
             try:
                 print('Installing...')
-                print("adb  -s " + dname + " install -r" + r" C:\Users\Administrator\Desktop\platform-tools\target.apk")
+                # print("adb  -s " + dname + " install -r" + r" C:\Users\Administrator\Desktop\platform-tools\target.apk")
                 print("安装文件路径："+path)
                 # ADb开始安装
-                install = os.popen("adb  -s " + dname + " install -r" + r" " + path).read()
+                # install = os.popen("adb  -s " + dname + " install -r" + r" " + path).read()
+                install = os.popen("adb  push " + path + " sdcard/iFlyIME/skin/theme/").read()
                 # install = subprocess.popen("adb  -s "+ dname + " install -r"+ r" "+path)
                 if "Success" in install:
-                    print(os.popen("adb -s " + dname + " install -r" + r" " + path).read())
+                    # print(os.popen("adb -s " + dname + " install -r" + r" " + path).read())
+                    print(os.popen("adb  push " + path + " sdcard/iFlyIME/skin/theme/").read())
                     print("安装成功")
                 else:
                     print("安装失败")
