@@ -1,10 +1,10 @@
 import sys
 
-from PyQt5 import QtWidgets, QtCore, Qt
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import QIcon, QFontDatabase, QFont, QPixmap
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontDatabase
 from PyQt5.QtWidgets import QPushButton, QApplication, QDialog, QVBoxLayout, QMessageBox, QPlainTextEdit, QLabel, \
-    QHBoxLayout, QComboBox
+    QHBoxLayout, QComboBox, QWidget
 from fontTools import subset
 import StreamlinedFont_rc
 
@@ -147,25 +147,57 @@ def msg(text):
     messageBox.exec_()
 
 
+def subSetFont(ff, tt):
+    options = subset.Options()  # dir(options)
+    font = subset.load_font(ff, options)
+    subsetter = subset.Subsetter(options)
+    subsetter.populate(text=tt)
+    subsetter.subset(font)
+    # options.flavor = 'woff'
+    subset.save_font(font, 'font.ttf', options)
+    modFont()
+
+
+class MyButton(QPushButton):
+    def __init__(self, tt):
+        super(MyButton, self).__init__()
+        self.setAcceptDrops(True)
+        self.tt = tt
+
+    def dragEnterEvent(self, e):
+        text = e.mimeData().text().lower()
+
+        if text.endswith('.ttf'):
+            e.accept()
+        else:
+            print(self.tt)
+            msg('暂时不支持的文件类型')
+            e.ignore()
+
+    def dropEvent(self, e):  # 放下文件后的动作
+        path = e.mimeData().text().replace('file:///', '')  # 删除多余开头
+        subSetFont(path, self.tt)
+
+
 class StreamlinedFont(QDialog):
     def __init__(self, parent=None):
         super(StreamlinedFont, self).__init__(parent)
         self.initUI()
-        self.setAcceptDrops(True)
+        # self.setAcceptDrops(True)
 
     def initUI(self):
         self.defaultText = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|'
         self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.setWindowTitle("字体精简小工具")
         self.resize(300, 170)
-        self.setFixedSize(300, 170)
+        # self.setFixedSize(300, 170)
         self.setWindowIcon(QIcon(':/windowIcon.png'))
 
-        # self.fontID = QFontDatabase.addApplicationFont('./font.ttf')
-        # self.fontName = QFontDatabase.applicationFontFamilies(self.fontID)[0]
+        self.fontID = QFontDatabase.addApplicationFont('./DroidSansFallback.ttf')
+        self.fontName = QFontDatabase.applicationFontFamilies(self.fontID)[0]
 
-        hwg = QtWidgets.QWidget()
-        vwg = QtWidgets.QWidget()
+        hwg = QWidget()
+        vwg = QWidget()
         layout = QVBoxLayout()
         layoutH = QHBoxLayout()
 
@@ -184,23 +216,29 @@ class StreamlinedFont(QDialog):
         self.textEdit1 = QPlainTextEdit()
         self.textEdit1.setFixedHeight(50)
         self.textEdit1.setPlainText(self.defaultText)
+        self.textEdit1.textChanged.connect(self.textEdit1Change)
 
         # self.button1 = SelectFontButton("选择或拖拽字体文件到这里", self)
-        self.button1 = QPushButton("选择或拖拽字体文件到这里")
+        self.button1 = MyButton(self.defaultText)
+        self.button1.setText("选择或拖拽字体文件到这里")
+        font = QFont(self.fontName)
+        # pointsize = font.pointSize()
+        font.setPointSize(12)
+        self.button1.setFont(font)
         self.button1.clicked.connect(self.clickedButton)
         self.button1.setFixedHeight(50)
         # self.button1.setFont(QFont('font', 20))
         # self.button1.setFont(QFont(self.fontName, 12))
 
         source = 'key.png'
-        Scale = [22, 22, 30, 30]  # 左,上,右,下 [22, 22, 30, 30]
+        scale = [22, 22, 30, 30]  # 左,上,右,下 [22, 22, 30, 30]
         # slice = '40 24 60 50'  # 上 右 下 左
         repeat = 'stretched stretched'  # rounded
 
         self.button1.setObjectName('button1')
         # self.button1.setStyleSheet('#button1{border-width:'+slice+';border-image:url(' + source + ') ' + slice+'}')
         # self.button1.setStyleSheet('border:30;border-image:url(key.png) 30')
-        self.setBorderImage(self.button1, Scale, source, repeat)
+        self.setBorderImage(self.button1, scale, source, repeat)
 
         hwg.setLayout(layoutH)
         # hwg.setObjectName('hwg')
@@ -209,8 +247,11 @@ class StreamlinedFont(QDialog):
         layout.addWidget(hwg)
         layout.addWidget(self.textEdit1)
         layout.addWidget(self.button1)
+        # layout.addWidget(self.button2)
 
         self.setLayout(layout)
+        font.setPointSize(10)
+        self.setFont(font)
 
     # 设置对象的.9背景图
     '''
@@ -219,7 +260,8 @@ class StreamlinedFont(QDialog):
     source:图片地址
     repeat:重复模式：铺满(rounded/repeat)或拉伸(stretched)
     '''
-    def setBorderImage(self, obj, Scale, source, repeat='stretched stretched'):
+
+    def setBorderImage(self, obj, scale, source, repeat='stretched stretched'):
         # 获取图片尺寸
         sourcePixmap = QPixmap(source)
         sourceWidth = sourcePixmap.width()
@@ -227,22 +269,27 @@ class StreamlinedFont(QDialog):
         # print(sourceHeight, sourceWidth)
 
         slice = [0, 0, 0, 0]
-        slice[0] = Scale[1]  # 上
-        slice[1] = sourceWidth - Scale[2]  # 右
+        slice[0] = scale[1]  # 上
+        slice[1] = sourceWidth - scale[2]  # 右
         if slice[1] < 0:
             slice[1] = 0
-        slice[2] = sourceHeight - Scale[3]  # 下
+        slice[2] = sourceHeight - scale[3]  # 下
         if slice[2] < 0:
             slice[2] = 0
-        slice[3] = Scale[0]  # 左
+        slice[3] = scale[0]  # 左
 
         slice = ' '.join([str(i) for i in slice])
 
         # print(slice)
         obj.setStyleSheet(
-            'padding:'+str(sourceHeight/2)+' -'+str(sourceWidth/2)+';border-width:' + slice + ';border-image:url(' + source + ') ' + slice + ' ' + repeat)
+            'padding:' + str(sourceHeight / 2) + ' -' + str(
+                sourceWidth / 2) + ';border-width:' + slice + ';border-image:url(' + source + ') ' + slice + ' ' + repeat)
+
+    def textEdit1Change(self):
+        self.button1.tt = self.textEdit1.toPlainText()
 
     def listChange(self, i):
+
         if i == 0:
             self.textEdit1.setPlainText(self.defaultText)
         elif i == 1:
@@ -252,25 +299,13 @@ class StreamlinedFont(QDialog):
                 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_+-=[]{},./?><\'\\|，。？；：‘“【】！￥…（）—')
         else:
             pass
-
-    def subSetFont(self, ff):
-        options = subset.Options()  # dir(options)
-        font = subset.load_font(ff, options)
-        subsetter = subset.Subsetter(options)
-        t = self.textEdit1.toPlainText()
-        subsetter.populate(text=t)
-        subsetter.subset(font)
-        # options.flavor = 'woff'
-
-        subset.save_font(font, 'font.ttf', options)
-        modFont()
-        # msg('字体精简完成\n请在程序目录下找到font.ttf文件')
+        self.button1.tt = self.textEdit1.toPlainText()
 
     def clickedButton(self):
         fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选择需要精简的字体", '', "字体文件(*.ttf)")
         if fileName:
             # subSetFont(fileName)
-            self.subSetFont(fileName)
+            subSetFont(fileName, self.textEdit1.toPlainText())
 
     def dragEnterEvent(self, e):
         text = e.mimeData().text().lower()
@@ -286,6 +321,7 @@ class StreamlinedFont(QDialog):
 
 
 if __name__ == '__main__':
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     main = StreamlinedFont()
     main.show()
